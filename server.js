@@ -3,13 +3,13 @@ const os = require('os');
 const mysql = require('mysql2');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 80;
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
 const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'db-service',
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.MYSQL_ROOT_PASSWORD || 'mypass',
