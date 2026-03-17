@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Inventory Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Cloud-Based Inventory Management System</h1>
+      <p class="subtitle">ECE 9016 Cloud Computing Project</p>
+    </header>
+
+    <section class="info-panel">
+      <div class="info-box">
+        <strong>Pod Name:</strong> <%= podName %>
+      </div>
+      <div class="info-box">
+        <strong>Pod IP:</strong> <%= podIp %>
+      </div>
+    </section>
+
+    <section class="filter-panel">
+      <form method="GET" action="/">
+        <label for="category">Filter by category:</label>
+        <select name="category" id="category">
+          <option value="">All Categories</option>
+          <% categories.forEach(category => { %>
+            <option value="<%= category %>" <%= selected === category ? 'selected' : '' %>>
+              <%= category %>
+            </option>
+          <% }) %>
+        </select>
+        <button type="submit">Apply</button>
+        <a class="clear-btn" href="/">Clear</a>
+      </form>
+    </section>
+
+    <% if (dbError) { %>
+      <div class="error-box">
+        <%= dbError %>
+      </div>
+    <% } %>
+
+    <section class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Supplier</th>
+            <th>Quantity</th>
+            <th>Price (USD)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (inventory.length === 0) { %>
+            <tr>
+              <td colspan="7" class="empty">No products found.</td>
+            </tr>
+          <% } %>
+
+          <% inventory.forEach(item => { %>
+            <tr>
+              <td><%= item.id %></td>
+              <td><%= item.name %></td>
+              <td><%= item.category %></td>
+              <td><%= item.supplier %></td>
+              <td><%= item.quantity %></td>
+              <td>$<%= Number(item.price).toFixed(2) %></td>
+              <td>
+                <span class="badge <%= item.stock_status %>">
+                  <%= item.stock_status %>
+                </span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

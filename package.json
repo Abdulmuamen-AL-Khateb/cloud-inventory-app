@@ -1,0 +1,17 @@
+{
+  "name": "inventory-app",
+  "version": "1.0.0",
+  "description": "Cloud-Based Inventory Management System for ECE 9016",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.5"
+  }
+}
