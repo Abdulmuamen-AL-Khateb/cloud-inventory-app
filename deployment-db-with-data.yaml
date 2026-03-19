@@ -1,0 +1,127 @@
+---
+# ConfigMap: load init.sql into the container so MySQL auto-runs it on first start
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS inventory;
+    USE inventory;
+
+    DROP TABLE IF EXISTS products;
+
+    CREATE TABLE products (
+      id           INT AUTO_INCREMENT PRIMARY KEY,
+      name         VARCHAR(100)  NOT NULL,
+      category     VARCHAR(50)   NOT NULL,
+      supplier     VARCHAR(100)  NOT NULL,
+      quantity     INT           NOT NULL DEFAULT 0,
+      price        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      stock_status ENUM('in_stock','low','out') NOT NULL DEFAULT 'in_stock'
+    );
+
+    INSERT INTO products (name, category, supplier, quantity, price, stock_status) VALUES
+    ('Intel Core i9-13900K','CPU','Intel',15,589.99,'in_stock'),
+    ('Intel Core i5-13600K','CPU','Intel',30,319.99,'in_stock'),
+    ('AMD Ryzen 9 7950X','CPU','AMD',8,699.99,'low'),
+    ('AMD Ryzen 5 7600X','CPU','AMD',25,249.99,'in_stock'),
+    ('AMD Ryzen 7 7700X','CPU','AMD',0,349.99,'out'),
+    ('Corsair Vengeance 16GB DDR5','Memory','Corsair',40,89.99,'in_stock'),
+    ('G.Skill Trident Z5 32GB DDR5','Memory','G.Skill',18,159.99,'in_stock'),
+    ('Kingston Fury 8GB DDR4','Memory','Kingston',60,34.99,'in_stock'),
+    ('Crucial 64GB DDR5 Kit','Memory','Crucial',5,289.99,'low'),
+    ('Samsung 16GB DDR4 ECC','Memory','Samsung',0,74.99,'out'),
+    ('Samsung 990 Pro 1TB NVMe','Storage','Samsung',22,129.99,'in_stock'),
+    ('WD Black SN850X 2TB NVMe','Storage','WD',14,189.99,'in_stock'),
+    ('Seagate Barracuda 4TB HDD','Storage','Seagate',35,79.99,'in_stock'),
+    ('Crucial P3 500GB NVMe','Storage','Crucial',7,44.99,'low'),
+    ('Samsung 870 EVO 1TB SATA SSD','Storage','Samsung',0,89.99,'out'),
+    ('ASUS ROG Strix Z790-E','Motherboard','ASUS',10,489.99,'in_stock'),
+    ('MSI MAG B650 TOMAHAWK','Motherboard','MSI',12,229.99,'in_stock'),
+    ('Gigabyte Z790 AORUS Master','Motherboard','Gigabyte',6,399.99,'low'),
+    ('ASRock B550 Phantom Gaming 4','Motherboard','ASRock',20,114.99,'in_stock'),
+    ('ASUS Prime X670-P','Motherboard','ASUS',0,269.99,'out'),
+    ('NVIDIA RTX 4090 24GB','GPU','NVIDIA',5,1599.99,'low'),
+    ('NVIDIA RTX 4070 Ti 12GB','GPU','NVIDIA',9,799.99,'low'),
+    ('AMD RX 7900 XTX 24GB','GPU','AMD',7,999.99,'low'),
+    ('AMD RX 7600 8GB','GPU','AMD',18,269.99,'in_stock'),
+    ('NVIDIA RTX 3060 12GB','GPU','NVIDIA',0,329.99,'out'),
+    ('Corsair RM1000x 1000W 80+ Gold','PSU','Corsair',15,189.99,'in_stock'),
+    ('EVGA SuperNOVA 850W 80+ Gold','PSU','EVGA',22,149.99,'in_stock'),
+    ('Seasonic Focus GX-750W','PSU','Seasonic',8,129.99,'low'),
+    ('be quiet! Straight Power 650W','PSU','be quiet!',0,109.99,'out'),
+    ('Thermaltake Toughpower 550W','PSU','Thermaltake',30,79.99,'in_stock'),
+    ('Noctua NH-D15 Air Cooler','Cooling','Noctua',20,99.99,'in_stock'),
+    ('Corsair H150i Elite 360mm AIO','Cooling','Corsair',11,189.99,'in_stock'),
+    ('DeepCool AK620 Air Cooler','Cooling','DeepCool',25,64.99,'in_stock'),
+    ('NZXT Kraken X63 280mm AIO','Cooling','NZXT',4,149.99,'low'),
+    ('Arctic Freezer 34 eSports','Cooling','Arctic',0,34.99,'out'),
+    ('Intel Wi-Fi 6E AX210 Card','Networking','Intel',30,29.99,'in_stock'),
+    ('TP-Link Archer TX3000E PCIe','Networking','TP-Link',18,44.99,'in_stock'),
+    ('Realtek 2.5G PCIe NIC','Networking','Realtek',6,24.99,'low'),
+    ('ASUS PCE-AX58BT Wi-Fi 6','Networking','ASUS',0,59.99,'out'),
+    ('Fenvi FV-T919 Wi-Fi/BT Card','Networking','Fenvi',12,39.99,'in_stock'),
+    ('Monoprice HDMI 2.1 Cable 2m','Cables','Monoprice',80,9.99,'in_stock'),
+    ('CableMod 24-Pin ATX Extension','Cables','CableMod',45,14.99,'in_stock'),
+    ('Noctua NA-SEC1 Extension Set','Cables','Noctua',30,12.99,'in_stock'),
+    ('SATA III Data Cable 0.5m','Cables','Generic',100,2.99,'in_stock'),
+    ('USB-C 3.2 Gen2 Cable 1m','Cables','Anker',55,9.99,'in_stock'),
+    ('Fractal Design Meshify 2','Case','Fractal Design',8,139.99,'low'),
+    ('Lian Li O11 Dynamic EVO','Case','Lian Li',10,169.99,'in_stock'),
+    ('NZXT H510 Flow Mid Tower','Case','NZXT',14,89.99,'in_stock'),
+    ('Corsair 4000D Airflow','Case','Corsair',6,94.99,'low'),
+    ('Phanteks Eclipse P300A','Case','Phanteks',0,69.99,'out');
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role
+                    operator: In
+                    values:
+                      - db-node
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: inventory
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+            # MySQL auto-runs any .sql file placed in this directory on first init
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+        - name: init-script
+          configMap:
+            name: mysql-init-script
