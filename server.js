@@ -1,10 +1,13 @@
 const express = require('express');
+const path = require('path');
 const os = require('os');
 const mysql = require('mysql2');
 const app = express();
 const port = process.env.PORT || 80;
 
 app.set('view engine', 'ejs');
+app.set('views', path.resolve('views'));
+app.use(express.static(path.resolve('public')));
 
 // Database connection — matches db-service ClusterIP and secret.yaml
 const db = mysql.createPool({

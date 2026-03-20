@@ -4,85 +4,223 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cloud Inventory Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Cloud-Based Inventory Management System</h1>
-      <p class="subtitle">ECE 9016 Cloud Computing Project</p>
-    </header>
 
-    <section class="info-panel">
-      <div class="info-box">
-        <strong>Pod Name:</strong> <%= podName %>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
       </div>
-      <div class="info-box">
-        <strong>Pod IP:</strong> <%= podIp %>
+      <span class="brand-text">Inventory</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        </svg>
+        <span>Products</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="pod-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+          <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+        </svg>
+        <div class="pod-details">
+          <span class="pod-label">Pod</span>
+          <span class="pod-value" title="<%= podName %>"><%= podName %></span>
+        </div>
+      </div>
+      <div class="pod-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <div class="pod-details">
+          <span class="pod-label">IP Address</span>
+          <span class="pod-value"><%= podIp %></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Inventory Dashboard</h1>
+        <p class="page-subtitle">ECE 9016 Cloud Computing Project</p>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <section class="stat-cards">
+      <%
+        const totalProducts = inventory.length;
+        const inStock = inventory.filter(i => i.stock_status === 'in_stock').length;
+        const lowStock = inventory.filter(i => i.stock_status === 'low').length;
+        const outOfStock = inventory.filter(i => i.stock_status === 'out').length;
+      %>
+      <div class="stat-card">
+        <div class="stat-icon total">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-number"><%= totalProducts %></span>
+          <span class="stat-label">Total Products</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon in-stock">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-number"><%= inStock %></span>
+          <span class="stat-label">In Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon low-stock">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-number"><%= lowStock %></span>
+          <span class="stat-label">Low Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon out-stock">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-number"><%= outOfStock %></span>
+          <span class="stat-label">Out of Stock</span>
+        </div>
       </div>
     </section>
 
-    <section class="filter-panel">
-      <form method="GET" action="/">
-        <label for="category">Filter by category:</label>
-        <select name="category" id="category">
-          <option value="">All Categories</option>
-          <% categories.forEach(category => { %>
-            <option value="<%= category %>" <%= selected === category ? 'selected' : '' %>>
-              <%= category %>
-            </option>
-          <% }) %>
-        </select>
-        <button type="submit">Apply</button>
-        <a class="clear-btn" href="/">Clear</a>
+    <!-- Filter Bar -->
+    <section class="toolbar">
+      <form method="GET" action="/" class="filter-form">
+        <div class="filter-group">
+          <label for="category">Category</label>
+          <select name="category" id="category">
+            <option value="">All Categories</option>
+            <% categories.forEach(category => { %>
+              <option value="<%= category %>" <%= selected === category ? 'selected' : '' %>>
+                <%= category %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filter
+        </button>
+        <% if (selected) { %>
+          <a class="btn btn-ghost" href="/">Clear</a>
+        <% } %>
       </form>
     </section>
 
     <% if (dbError) { %>
       <div class="error-box">
-        <%= dbError %>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span><%= dbError %></span>
       </div>
     <% } %>
 
-    <section class="table-section">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Supplier</th>
-            <th>Quantity</th>
-            <th>Price (USD)</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (inventory.length === 0) { %>
+    <!-- Table -->
+    <section class="table-card">
+      <div class="table-header">
+        <h2>Products</h2>
+        <span class="record-count"><%= totalProducts %> records</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
             <tr>
-              <td colspan="7" class="empty">No products found.</td>
+              <th>ID</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Supplier</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Status</th>
             </tr>
-          <% } %>
-
-          <% inventory.forEach(item => { %>
-            <tr>
-              <td><%= item.id %></td>
-              <td><%= item.name %></td>
-              <td><%= item.category %></td>
-              <td><%= item.supplier %></td>
-              <td><%= item.quantity %></td>
-              <td>$<%= Number(item.price).toFixed(2) %></td>
-              <td>
-                <span class="badge <%= item.stock_status %>">
-                  <%= item.stock_status %>
-                </span>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% if (inventory.length === 0) { %>
+              <tr>
+                <td colspan="7" class="empty">
+                  <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                    <p>No products found</p>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+            <% inventory.forEach(item => { %>
+              <tr>
+                <td class="cell-id">#<%= item.id %></td>
+                <td class="cell-name"><%= item.name %></td>
+                <td><span class="category-tag"><%= item.category %></span></td>
+                <td class="cell-supplier"><%= item.supplier %></td>
+                <td class="cell-qty"><%= item.quantity %></td>
+                <td class="cell-price">$<%= Number(item.price).toFixed(2) %></td>
+                <td>
+                  <span class="badge <%= item.stock_status %>">
+                    <span class="badge-dot"></span>
+                    <%= item.stock_status === 'in_stock' ? 'In Stock' : item.stock_status === 'low' ? 'Low Stock' : 'Out of Stock' %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
     </section>
-  </div>
+
+  </main>
+
 </body>
 </html>
