@@ -93,10 +93,18 @@ thead {
   color: white;
 }
 
+th:hover {
+  background: #2a6299;
+}
+
 th, td {
   padding: 12px;
   border-bottom: 1px solid #eee;
   text-align: left;
+}
+
+tbody tr {
+  transition: opacity 0.35s ease, transform 0.35s ease, background 0.2s ease;
 }
 
 tr:hover {
