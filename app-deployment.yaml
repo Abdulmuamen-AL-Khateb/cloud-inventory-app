@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app-deployment
+  labels:
+    app: inventory-app
+spec:
+  replicas: 2 # You can adjust the number of pods
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      containers:
+        - name: inventory-app
+          # This image will be overwritten by GitHub Actions during deployment
+          image: us-east1-docker.pkg.dev/subtle-seer-480618-q5/docker-repository/inventory-app:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: PORT
+              value: "80"
+            - name: DB_HOST
+              value: "db-service" # This matches the service name of your database in Kubernetes
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: "root"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "mypass" # This should match what's in your db deployment (or secret)
+            - name: DB_NAME
+              value: "inventory"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-app-service
+spec:
+  type: LoadBalancer # Exposes the app to the internet
+  selector:
+    app: inventory-app
+  ports:
+    - protocol: TCP
+      port: 80 # The port exposed externally
+      targetPort: 80 # The port the container is listening on
