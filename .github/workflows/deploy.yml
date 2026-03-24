@@ -9,7 +9,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GAR_LOCATION: us-east1 # TODO: Update with your Artifact registry region
   GKE_CLUSTER: inventory-cloudbuild # TODO: Update with your GKE cluster name
-  GKE_ZONE: us-east1 # TODO: Update with your GKE cluster zone
+  GKE_ZONE: us-east1-c # TODO: Update with your GKE cluster zone
   REPOSITORY: docker-repository # TODO: Update with your Artifact Registry repository name
   IMAGE: inventory-app
 
