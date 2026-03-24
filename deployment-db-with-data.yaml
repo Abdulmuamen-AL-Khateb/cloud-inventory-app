@@ -74,6 +74,40 @@ data:
     ('Phanteks Eclipse P300A','Case','Phanteks',0,69.99,'out');
 
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  mysql-root-password: bXlwYXNz # "mypass" base64 encoded
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  labels:
+    app: database
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: database
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -90,15 +124,6 @@ spec:
       labels:
         app: database
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role
-                    operator: In
-                    values:
-                      - db-node
       containers:
         - name: mysql
           image: mysql:5.7
