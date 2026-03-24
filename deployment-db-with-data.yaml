@@ -140,6 +140,7 @@ spec:
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
+              subPath: mysql-data
             # MySQL auto-runs any .sql file placed in this directory on first init
             - name: init-script
               mountPath: /docker-entrypoint-initdb.d
