@@ -4,66 +4,47 @@ on:
   push:
     branches:
       - main
-
-env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GAR_LOCATION: us-east1 # TODO: Update with your Artifact registry region
-  GKE_CLUSTER: inventory-cloudbuild # TODO: Update with your GKE cluster name
-  GKE_ZONE: us-east1-c # TODO: Update with your GKE cluster zone
-  REPOSITORY: docker-repository # TODO: Update with your Artifact Registry repository name
-  IMAGE: inventory-app
+      - dev
 
 jobs:
   setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GAR_LOCATION: us-east1
+      GKE_CLUSTER: ${{ github.ref_name == 'main' && 'inventory-cloudbuild' || 'inventory-dev-cluster' }}
+      GKE_ZONE: ${{ github.ref_name == 'main' && 'us-east1-c' || 'us-east1-c' }}
+      K8S_NAMESPACE: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+      REPOSITORY: docker-repository
+      IMAGE: inventory-app
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Authenticate via the Service Account JSON key stored in GitHub Secrets
-      - id: "auth"
-        uses: "google-github-actions/auth@v2"
+      - uses: google-github-actions/auth@v2
         with:
-          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      # Set up credentials so kubectl works
-      - name: Set up GKE credentials
-        uses: "google-github-actions/get-gke-credentials@v2"
+      - uses: google-github-actions/get-gke-credentials@v2
         with:
-          cluster_name: "${{ env.GKE_CLUSTER }}"
-          location: "${{ env.GKE_ZONE }}"
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
 
-      # Configure Docker to authenticate to Artifact Registry
-      - name: Docker Auth
-        run: |-
-          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
-
-      # Build the Docker image tagging it with the Git SHA
       - name: Build
-        run: |-
-          docker build \
-            --tag "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }}" \
-            .
+        run: |
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.ref_name }}-${{ github.sha }}" .
 
-      # Push the Docker image to Google Artifact Registry
       - name: Publish
-        run: |-
-          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }}"
+        run: |
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.ref_name }}-${{ github.sha }}"
 
-      # Deploy the application to GKE
       - name: Deploy
-        run: |-
-          # Apply the Database deployment and config map
-          kubectl apply -f deployment-db-with-data.yaml
-
-          # Apply the Node.js app deployment and service
-          kubectl apply -f app-deployment.yaml
-
-          # Update your node.js deployment to use the newly built image
-          kubectl set image deployment/inventory-app-deployment inventory-app=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }}
-
-          # Output info for debugging
-          kubectl get pods
+        run: |
+          kubectl create namespace "${{ env.K8S_NAMESPACE }}" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -n "${{ env.K8S_NAMESPACE }}" -f deployment-db-with-data.yaml
+          kubectl apply -n "${{ env.K8S_NAMESPACE }}" -f app-deployment.yaml
+          kubectl set image -n "${{ env.K8S_NAMESPACE }}" deployment/inventory-app-deployment inventory-app="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.ref_name }}-${{ github.sha }}"
+          kubectl rollout status -n "${{ env.K8S_NAMESPACE }}" deployment/inventory-app-deployment
+          kubectl get pods -n "${{ env.K8S_NAMESPACE }}"
